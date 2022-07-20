@@ -1,0 +1,43 @@
+```
+file: gfs.t18z.pgrb2.0p25.f001
+lev_surface: on
+var_CPOFP: on
+var_GUST: on
+var_ICEC: on
+var_ICETK: on
+var_LCDC: on
+var_PLPL: on
+var_RH: on
+var_SNOD: on
+var_TCDC: on
+var_TMP: on
+leftlon: 0
+rightlon: 360
+toplat: 90
+bottomlat: -90
+dir: /gfs.20220619/18/atmos
+
+lat
+lon
+time
+Ice_cover_surface
+Ice_thickness_surface
+Per_cent_frozen_precipitation_surface
+Snow_depth_surface
+Temperature_surface
+Wind_speed_gust_surface
+```
+
+
+
+```md
+CPOFP_surface   冻结降水量
+GUST_surface    风速
+ICEC_surface    冰雪覆盖率
+ICETK_surface   冰厚
+SNOD_surface    雪深
+TMP_surface     温度
+PLPL            气压
+LCDC            低云量
+TCDC            总云量
+```
