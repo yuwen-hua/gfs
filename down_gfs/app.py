@@ -63,7 +63,7 @@ class Config(object):
 
 def task(a, b):
     level = ['lev_surface', 'lev_max_wind','lev_2_m_above_ground', 'lev_low_cloud_layer']
-    # level = ['lev_max_wind']
+    # level = 'lev_max_wind','lev_2_m_above_ground', 'lev_low_cloud_layer'
     date = getYesterday()
     down_date = date.strftime('%Y%m%d')
     file_date = datetime.datetime.now().strftime('%Y\\%m\\%d')
@@ -74,30 +74,33 @@ def task(a, b):
         downFile(down_date,i, down_path)
         re(date,i, down_path)
         for root, dirs, files in os.walk(down_path):
-            index = 0
             for file in files:
-                index+=1
                 if not file.endswith('.tif'):
                     print('删除：',root + '\\' + file,root)
                     os.remove(root + '\\' + file)
                 # time.sleep(120)
-                if (index % 2) == 0:
-                    print(file[:],index)
-                    sort = int(file[22:24]) - 32
-                    v=Image.open(root + '\\' + file)
-                    v_arr = np.asarray(v)
-                    u_name = file[:25]
-                    u_name = u_name + 'U' + file[26:]
-                    u = Image.open(root + '\\' + u_name)
-                    u_arr = np.asarray(u)
-                    result = create_wind(u_arr, v_arr)
-                    result = json.dumps(result)
-                    # print(result)
-                    path = 'D:\\dataSource\\gfs' + '\\' + 'json' + '\\' + file_date + '\\'
-                    if not os.path.exists(path):
-                        os.makedirs(path)
-                    with open(path + str(sort) + '.json', 'w',encoding='utf-8') as f:
-                        f.write(result)
+        if i == 'lev_max_wind':
+            for root, dirs, files in os.walk(down_path):
+                index = 0
+                for file in files:
+                    index += 1
+                    if (index % 2) == 0:
+                        print(file[:],index)
+                        sort = int(file[22:24]) - 32
+                        v=Image.open(root + '\\' + file)
+                        v_arr = np.asarray(v)
+                        u_name = file[:25]
+                        u_name = u_name + 'U' + file[26:]
+                        u = Image.open(root + '\\' + u_name)
+                        u_arr = np.asarray(u)
+                        result = create_wind(u_arr, v_arr)
+                        result = json.dumps(result)
+                        # print(result)
+                        path = 'D:\\dataSource\\gfs' + '\\' + 'json' + '\\' + file_date + '\\'
+                        if not os.path.exists(path):
+                            os.makedirs(path)
+                        with open(path + str(sort) + '.json', 'w',encoding='utf-8') as f:
+                            f.write(result)
     print(down_date,file_date,date,down_path)
     print(str(datetime.datetime.now()) + ' execute task ' + '{}+{}={}'.format(a, b, a + b))
 
@@ -559,14 +562,14 @@ def nc_tif(ds, path, key, file_name):
 
 
 if __name__ == '__main__':
-    app = Flask(__name__)
-    def scheduler_init(app):
-        scheduler = APScheduler()
-        scheduler.init_app(app)
-        scheduler.start()
-
-    app.config.from_object(Config)
-    scheduler_init(app)
-    # task(1,2)
-    # print(222222222222)
+    # app = Flask(__name__)
+    # def scheduler_init(app):
+    #     scheduler = APScheduler()
+    #     scheduler.init_app(app)
+    #     scheduler.start()
+    #
+    # app.config.from_object(Config)
+    # scheduler_init(app)
+    task(1,2)
+    print(222222222222)
     app.run(port=8000,debug=False)
