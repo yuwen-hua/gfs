@@ -13,14 +13,11 @@ import datetime
 import netCDF4 as nc
 from osgeo import gdal, osr, ogr
 
-
 from flask import Flask
 import datetime
 from flask_apscheduler import APScheduler
 
 connect('prediction', host='114.242.60.27', port=8900)
-
-
 
 chromedriver = "F:/chromedriver_win32/chromedriver"  # 驱动程序所在的位置
 grib2 = "F:/grib2"
@@ -41,9 +38,9 @@ app = Flask(__name__)
 
 
 def getYesterday():
-    today=datetime.date.today()
-    oneday=datetime.timedelta(days=1)
-    yesterday=today-oneday
+    today = datetime.date.today()
+    oneday = datetime.timedelta(days=1)
+    yesterday = today - oneday
     return yesterday
 
 
@@ -61,22 +58,25 @@ class Config(object):
     ]
     SCHEDULER_API_ENABLED = True
 
+
 def task(a, b):
-    level = ['lev_surface', 'lev_max_wind','lev_2_m_above_ground', 'lev_low_cloud_layer']
-    # level = 'lev_max_wind','lev_2_m_above_ground', 'lev_low_cloud_layer'
+    print(444444444)
+    return
+    level = ['lev_surface', 'lev_max_wind', 'lev_2_m_above_ground', 'lev_low_cloud_layer']
+    level = ['lev_2_m_above_ground']
     date = getYesterday()
     down_date = date.strftime('%Y%m%d')
     file_date = datetime.datetime.now().strftime('%Y\\%m\\%d')
     # file_date = '2022\\07\\15'
-    print(type(date),date)
+    print(type(date), date)
     for i in level:
         down_path = 'D:\\dataSource\\gfs' + '\\' + i + '\\' + file_date
-        downFile(down_date,i, down_path)
-        re(date,i, down_path)
+        # downFile(down_date, i, down_path)
+        re(date, i, down_path)
         for root, dirs, files in os.walk(down_path):
             for file in files:
                 if not file.endswith('.tif'):
-                    print('删除：',root + '\\' + file,root)
+                    print('删除：', root + '\\' + file, root)
                     os.remove(root + '\\' + file)
                 # time.sleep(120)
         if i == 'lev_max_wind':
@@ -85,9 +85,9 @@ def task(a, b):
                 for file in files:
                     index += 1
                     if (index % 2) == 0:
-                        print(file[:],index)
+                        print(file[:], index)
                         sort = int(file[22:24]) - 32
-                        v=Image.open(root + '\\' + file)
+                        v = Image.open(root + '\\' + file)
                         v_arr = np.asarray(v)
                         u_name = file[:25]
                         u_name = u_name + 'U' + file[26:]
@@ -99,18 +99,18 @@ def task(a, b):
                         path = 'D:\\dataSource\\gfs' + '\\' + 'json' + '\\' + file_date + '\\'
                         if not os.path.exists(path):
                             os.makedirs(path)
-                        with open(path + str(sort) + '.json', 'w',encoding='utf-8') as f:
+                        with open(path + str(sort) + '.json', 'w', encoding='utf-8') as f:
                             f.write(result)
-    print(down_date,file_date,date,down_path)
+    print(down_date, file_date, date, down_path)
     print(str(datetime.datetime.now()) + ' execute task ' + '{}+{}={}'.format(a, b, a + b))
 
 
-def create_wind(u,v):
+def create_wind(u, v):
     result = {}
     result['lat_size'] = -0.25
     result['lon_size'] = -0.25
-    dx = result['lat_size']*3
-    dy = result['lon_size']*3
+    dx = result['lat_size'] * 3
+    dy = result['lon_size'] * 3
     header_u = {
         "lo1": 0,
         "lo2": 359.75,
@@ -199,8 +199,9 @@ def download():
     print(hour)
     return 'Hello World!'
 
-def downFile(date,level, down_path):
-    print(2222,date,level,down_path)
+
+def downFile(date, level, down_path):
+    print(2222, date, level, down_path)
     chromeOptions = webdriver.ChromeOptions()
     # 设定下载文件的保存目录
     # 如果该目录不存在，将会自动创建
@@ -209,7 +210,7 @@ def downFile(date,level, down_path):
     chromeOptions.add_experimental_option("prefs", prefs)
     # 启动带有自定义设置的Chrome浏览器
     driver = webdriver.Chrome(chromedriver, \
-                          chrome_options=chromeOptions)
+                              chrome_options=chromeOptions)
     driver.maximize_window()  # 窗口最大化（无关紧要哈）
     # gfs.t00z.pgrb2full.0p25.f000，“t00”大概表示格林威治时刻0时发布的文件。0p25指的是精度，每0.25度（经纬度）一个点
 
@@ -236,7 +237,7 @@ def downFile(date,level, down_path):
     driver.quit()
 
 
-def re(date,level, file):
+def re(date, level, file):
     print(111)
     # 转到wgrib2工具目录
     os.chdir(grib2)
@@ -244,11 +245,11 @@ def re(date,level, file):
     for root, dirs, files in os.walk(file):
         for file in files:
             p = os.path.join(root, file)
-            nc_path = "wgrib2"+ " " + p + " " + "-netcdf" + " " + p + ".nc"
+            nc_path = "wgrib2" + " " + p + " " + "-netcdf" + " " + p + ".nc"
             print(nc_path)
             os.system(nc_path)
             p = p + '.nc'
-            main(p,'互联网公开数据', 'gfs', date,level,file)
+            main(p, '互联网公开数据', 'gfs', date, level, file)
 
     #         read_path = "wgrib2" " " + p + " " + "-v"
     #         os.system(read_path)
@@ -279,10 +280,9 @@ def nc2mg(path, var_key, data_source, file_name, data_time, p):
         ds = ds.rename({'longitude_adjusted': lon_name})
         ds[lon_name].attrs['units'] = 'degree_east'
 
-
     var = ds[var_key]
     varlist = ds.variables.keys()
-    print(55555555,var,varlist)
+    print(55555555, var, varlist)
     dimensions = ds.dims.keys()
     for d in dimensions:
         if 'lat' in d:
@@ -293,7 +293,7 @@ def nc2mg(path, var_key, data_source, file_name, data_time, p):
             dep_key = d
     unitsDic = {}
     for dm in varlist:
-        if dm == 'time' or dm == 'Ice_cover_surface' or dm== 'LatLon_Projection':
+        if dm == 'time' or dm == 'Ice_cover_surface' or dm == 'LatLon_Projection':
             continue
         unitsDic[dm] = ds[dm].attrs['units']  # nc_obj.variables[dm]
     print(unitsDic)
@@ -346,7 +346,7 @@ def nc2mg(path, var_key, data_source, file_name, data_time, p):
         subjects=[1],
         # model_depth=depths1,
         model_dt=[data_time],
-        sort = sort,
+        sort=sort,
         database_year=data_time[0:4],
         shared='625d05ad44fb0bfb1b12f3a4',
         timeliness='实时',
@@ -355,13 +355,13 @@ def nc2mg(path, var_key, data_source, file_name, data_time, p):
     )
     print(ncmeta)
     ncmeta.save()
-    print(1111111111111111,ncmeta)
+    print(1111111111111111, ncmeta)
     tif_path = path.split('.nc')[0] + '_' + var_key + '.tif'
     print(tif_path)
-    saveData(var, tif_path, dimensions, data_source, unitsDic, data_time, lat, lon, ncmeta, var_key,sort)
+    saveData(var, tif_path, dimensions, data_source, unitsDic, data_time, lat, lon, ncmeta, var_key, sort)
 
 
-def saveData(var, tif_path, dimensions, data_source, unitsDic, data_time, lat, lon, ncmeta, var_key,sort):
+def saveData(var, tif_path, dimensions, data_source, unitsDic, data_time, lat, lon, ncmeta, var_key, sort):
     # for depth in depths:
     # temp = var.sel()
     grand = np.array(var)[0][::-1]
@@ -377,7 +377,7 @@ def saveData(var, tif_path, dimensions, data_source, unitsDic, data_time, lat, l
     print('色斑图生成完毕')
     img_str = 'data:image/png;base64,' + base64.b64encode(cv2.imencode('.png', img)[1]).decode()
     elevation = open(tif_path, 'rb')
-    print(9999999999999,var_key)
+    print(9999999999999, var_key)
     if var_key == 'VGRD_maxwind' or var_key == 'UGRD_maxwind':
         nc = profile[var_key](
             dimensions=dimensions,
@@ -419,21 +419,22 @@ def saveData(var, tif_path, dimensions, data_source, unitsDic, data_time, lat, l
         )
 
     nc.save()
-    print(3333333333333,nc)
+    print(3333333333333, nc)
 
 
 def main(path, data_source, key, date, level, filename):
-    print(111,path)
+    print(111, path)
     # var_keyh = path.split("\\nc\\")[1].split("\\")[0]
     if level == 'lev_surface':
-        keyList = ['CPOFP_surface', 'PRES_surface','GUST_surface', 'ICEC_surface', 'ICETK_surface','SNOD_surface','TMP_surface']
+        keyList = ['CPOFP_surface', 'PRES_surface', 'GUST_surface', 'ICEC_surface', 'ICETK_surface', 'SNOD_surface',
+                   'TMP_surface']
     elif level == 'lev_2_m_above_ground':
         keyList = ['RH_2maboveground']
     elif level == 'lev_low_cloud_layer':
         keyList = ['LCDC_lowcloudlayer']
     elif level == 'lev_max_wind':
-        keyList = ['UGRD_maxwind','VGRD_maxwind']
-    get_nc(keyList,path,filename)
+        keyList = ['UGRD_maxwind', 'VGRD_maxwind']
+    get_nc(keyList, path, filename)
     for i in keyList:
         var_keyh = i
         # for root, dirs, files in os.walk(path):
@@ -452,12 +453,14 @@ def main(path, data_source, key, date, level, filename):
             # print(data_time)
             data_time = date
             # data_time = '2021' + '-' + month + '-' + '01'
+            return
             nc2mg(path, var_keyh, data_source, file_name, data_time, path.split(key)[1])
 
 
 def linearInterpolation(x, x1, x2, x1value, x2value):
     a = ((x2 - x) / (x2 - x1) * x1value) + ((x - x1) / (x2 - x1) * x2value)
     return int(a)
+
 
 # 获取每个值的颜色rgb数组
 def get_l_co(value, colorArr, breakArray, type):
@@ -511,26 +514,26 @@ def getRgbArrayList(array, type):
     return r, g, b, a
 
 
-def get_nc(key_list, path,filename):
+def get_nc(key_list, path, filename):
     # for root, dirs, files in os.walk(path):
     #     for file_name in files:
-            if path.endswith('.nc'):
-                print(path)
-                ds = xr.open_dataset(path)
-                lon_name = 'longitude'  # 你的nc文件中经度的命名
-                ds['longitude_adjusted'] = xr.where(
-                    ds[lon_name] > 180,
-                    ds[lon_name] - 360,
-                    ds[lon_name])
-                ds = (
-                    ds
-                        .swap_dims({lon_name: 'longitude_adjusted'})
-                        .sel(**{'longitude_adjusted': sorted(ds.longitude_adjusted)})
-                        .drop(lon_name))
-                ds = ds.rename({'longitude_adjusted': lon_name})
-                ds[lon_name].attrs['units'] = 'degree_east'
-                for key in key_list:
-                    nc_tif(ds, path, key, filename.split('.nc')[0])
+    if path.endswith('.nc'):
+        print(path)
+        ds = xr.open_dataset(path)
+        lon_name = 'longitude'  # 你的nc文件中经度的命名
+        ds['longitude_adjusted'] = xr.where(
+            ds[lon_name] > 180,
+            ds[lon_name] - 360,
+            ds[lon_name])
+        ds = (
+            ds
+                .swap_dims({lon_name: 'longitude_adjusted'})
+                .sel(**{'longitude_adjusted': sorted(ds.longitude_adjusted)})
+                .drop(lon_name))
+        ds = ds.rename({'longitude_adjusted': lon_name})
+        ds[lon_name].attrs['units'] = 'degree_east'
+        for key in key_list:
+            nc_tif(ds, path, key, filename.split('.nc')[0])
 
 
 # nc数据集转tif
@@ -538,38 +541,44 @@ def nc_tif(ds, path, key, file_name):
     Lat = np.array(ds['latitude'])
     Lon = np.array(ds['longitude'])
     # print(33333,ds[key])
-    value = np.array(ds[key])
+    value = np.array(ds[key])[0]
+    [rows, cols] = value.shape
+    dara = np.insert(value, cols - 1, value[:, cols-1], axis=1)
+    # value = np.array(ds[key])[0]
+    [rows, cols] = dara.shape
+    value = np.insert(dara, cols - 1, dara[:, cols - 1], axis=1)
     # slot = value[:1,:1]
     # data = np.append(value,slot,axis=None)
     # print(4444,value,data)
     # return
     LonMin, LatMax, LonMax, LatMin = [Lon.min(), Lat.max(), Lon.max(), Lat.min()]
+    LonMin = -180
     N_Lat = len(Lat)
-    N_Lon = len(Lon)
+    N_Lon = len(Lon)+2
     Lon_Res = (LonMax - LonMin) / (float(N_Lon) - 1)
     Lat_Res = (LatMax - LatMin) / (float(N_Lat) - 1)
     driver = gdal.GetDriverByName('GTiff')
-    out_tif_name = path.split('.nc')[0]  + '_' + key + '.tif'
+    out_tif_name = path.split('.nc')[0] + '_' + key + '.tif'
     out_tif = driver.Create(out_tif_name, N_Lon, N_Lat, 1, gdal.GDT_Float32)
     geotransform = (LonMin, Lon_Res, 0, LatMax, 0, -Lat_Res)
     out_tif.SetGeoTransform(geotransform)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)  # 定义输出的坐标系为"WGS 84"，AUTHORITY["EPSG","4326"]
     out_tif.SetProjection(srs.ExportToWkt())  # 给新建图层赋予投影信息
-    out_tif.GetRasterBand(1).WriteArray(value[0][::-1])  # 将数据写入内存，此时没有写入硬盘
+    out_tif.GetRasterBand(1).WriteArray(value[::-1])  # 将数据写入内存，此时没有写入硬盘
     out_tif.FlushCache()  # 将数据写入硬盘
     out_tif = None  # 注意必须关闭tif文件
 
 
 if __name__ == '__main__':
-    # app = Flask(__name__)
-    # def scheduler_init(app):
-    #     scheduler = APScheduler()
-    #     scheduler.init_app(app)
-    #     scheduler.start()
-    #
-    # app.config.from_object(Config)
-    # scheduler_init(app)
-    task(1,2)
-    print(222222222222)
-    app.run(port=8000,debug=False)
+    app = Flask(__name__)
+    def scheduler_init(app):
+        scheduler = APScheduler()
+        scheduler.init_app(app)
+        scheduler.start()
+    
+    app.config.from_object(Config)
+    scheduler_init(app)
+    # task(1, 2)
+    # print(222222222222)
+    app.run(port=8000, debug=False)
